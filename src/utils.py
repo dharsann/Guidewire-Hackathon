@@ -1,6 +1,6 @@
 import subprocess
 import torch
-from app.models import prediction_model, anomaly_detection_model, scaler
+from src.models import prediction_model, anomaly_detection_model, scaler
 
 def get_active_pods():
     result = subprocess.run(["kubectl", "get", "pods", "-o", "jsonpath={.items[*].metadata.name}"], capture_output=True, text=True)
@@ -17,20 +17,21 @@ def get_active_deployments():
     deployments = result.stdout.split()
     return deployments if deployments else ["unknown"]
 
-def predict_kubernetes_metrics(input_data):
-    input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0)
-    with torch.no_grad():
-        predicted_values = prediction_model(input_tensor).numpy().tolist()
-    return predicted_values
-
-def detect_anomaly(predicted_values):
-    predicted_values_scaled = scaler.transform([predicted_values[0]]) 
-    prediction = anomaly_detection_model.predict(predicted_values_scaled)
-    return "Anomaly" if prediction[0] == -1 else "Normal"
-
-def restart_pod(pod_name):
-    subprocess.run(["kubectl", "delete", "pod", pod_name], check=True)
-    return f"Restarted pod {pod_name}"
+def restart_pod(pod_name, namespace="default"):
+    active_pods = get_active_pods()
+    if pod_name not in active_pods:
+        return f"Error: Pod {pod_name} not found!"
+    try:
+        result = subprocess.run(
+            ["kubectl", "delete", "pod", pod_name, "-n", namespace],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return f"Restarted pod {pod_name}"
+    except subprocess.CalledProcessError as e:
+        error_message = e.stderr.strip()
+        return f"Failed to restart {pod_name}: {error_message}"
 
 def scale_deployment(deployment_name, replicas):
     subprocess.run(["kubectl", "scale", "deployment", deployment_name, f"--replicas={replicas}"], check=True)
