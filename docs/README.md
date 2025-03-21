@@ -1,6 +1,6 @@
 # Kubernetes Self-Healing Service
 
-This project provides a self-healing service for Kubernetes environments using FastAPI. It leverages machine learning models to predict metrics, detect anomalies, and take corrective actions based on detected issues. The project is currently under development.
+This project provides a self-healing service for Kubernetes environments using FastAPI. It leverages machine learning models to predict metrics, detect anomalies, and take corrective actions based on detected issues. The project is currently under development. The project is currently under development and uses Minikube for testing and deployment.
 
 ## Table of Contents
 
