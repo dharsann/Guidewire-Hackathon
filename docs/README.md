@@ -1,6 +1,6 @@
 # Kubernetes Self-Healing Service
 
-This project provides a self-healing service for Kubernetes environments using FastAPI. It leverages machine learning models to predict metrics, detect anomalies, and take corrective actions based on the detected issues. It is under development.
+This project provides a self-healing service for Kubernetes environments using FastAPI. It leverages machine learning models to predict metrics, detect anomalies, and take corrective actions based on detected issues. The project is currently under development.
 
 ## Table of Contents
 
@@ -9,6 +9,7 @@ This project provides a self-healing service for Kubernetes environments using F
 - [Usage](#usage)
 - [API Endpoints](#api-endpoints)
 - [Model Training](#model-training)
+- [Data Source](#data-source)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -21,68 +22,72 @@ This project provides a self-healing service for Kubernetes environments using F
 
 ## Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd <repository-directory>
+```
 
-    Set Up a Virtual Environment:
-
+### 2. Set Up a Virtual Environment
+```bash
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
 
-Install Dependencies:
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-    pip install -r requirements.txt
+### 4. Download Pre-trained Models
+Ensure the following pre-trained models are in the project directory:
+- **LSTM Model:** `lstm_k8s_model_extended.pth`
+- **Isolation Forest Model:** `isolation_forest.pkl`
 
-    Download Pre-trained Models:
-        Ensure the pre-trained LSTM model (lstm_k8s_model_extended.pth) is in the project directory.
-        Ensure the Isolation Forest model (isolation_forest.pkl) is in the project directory.
+## Usage
 
-Usage
+### Run the FastAPI Application
+```bash
+uvicorn your_module_name:app --reload
+```
+Replace `your_module_name` with the name of your Python file (without the `.py` extension).
 
-    Run the FastAPI Application:
+### Access the API
+- The API will be available at **http://127.0.0.1:8000**.
+- Use tools like **Postman** or `cURL` to interact with the API.
 
-    uvicorn your_module_name\:app --reload
+## API Endpoints
 
-    Replace your_module_name with the name of your Python file (without the .py extension).
+### `/self_heal`
+- **Method:** `POST`
+- **Description:** Endpoint to predict Kubernetes metrics, detect anomalies, and take corrective actions.
+- **Request Body:**
+    ```json
+    {
+        "input_features": [0.8, 0.7, 400],  
+        "pod_lifetime_seconds": 45,
+        "event_type": "Warning",
+        "pod_name": "nginx-pod",
+        "node_name": "minikube"
+    }
+    ```
+- **Response:**
+    ```json
+    {
+        "predicted_values": [...],
+        "status": "Anomaly or Normal",
+        "issue_type": "Type of issue",
+        "action": "Action taken"
+    }
+    ```
 
-    Access the API:
-        The API will be available at http://127.0.0.1:8000.
-        Use tools like Postman or cURL to interact with the API.
+## Model Training
 
-API Endpoints
+- The **LSTM model** is trained to predict Kubernetes performance metrics.
+- The **Isolation Forest model** is used for anomaly detection.
+- Ensure the models are trained and saved in the project directory before running the application.
 
-    /self_heal:
-        Method: POST
-        Description: Endpoint to predict Kubernetes metrics, detect anomalies, and take corrective actions.
-        Request Body:
+## Data Source
 
-{
-  "input_features": {
-    "cpu_allocation_efficiency": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.9, 0.8, 0.7, 0.6],
-    "memory_allocation_efficiency": [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.8, 0.7, 0.6, 0.5],
-    "disk_io": [100, 150, 200, 250, 300, 350, 300, 250, 200, 150],
-    "network_latency": [20, 25, 30, 35, 40, 45, 40, 35, 30, 25],
-    "node_cpu_usage": [70, 75, 80, 85, 90, 95, 90, 85, 80, 75],
-    "node_memory_usage": [50, 55, 60, 65, 70, 75, 70, 65, 60, 55]
-  },
-  "pod_name": "example-pod",
-  "deployment_name": "example-deployment",
-  "node_name": "example-node"
-}
+The dataset used for training the models is sourced from Kaggle. It contains performance metrics and other relevant data from Kubernetes environments. The dataset is preprocessed and used to train the LSTM model for predicting future metrics and the Isolation Forest model for detecting anomalies.
 
-Response:
-
-        {
-          "predicted_values": [...],
-          "status": "Anomaly or Normal",
-          "issue_type": "Type of issue",
-          "action": "Action taken"
-        }
-
-Model Training
-
-    The LSTM model is trained to predict Kubernetes performance metrics.
-    The Isolation Forest model is used for anomaly detection.
-    Ensure the models are trained and saved in the project directory before running the application.
