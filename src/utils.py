@@ -1,5 +1,4 @@
 import subprocess
-import torch
 from src.models import prediction_model, anomaly_detection_model, scaler
 
 def get_active_pods():
