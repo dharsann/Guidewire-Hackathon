@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: self-healing-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: self-healing-ai
+  template:
+    metadata:
+      labels:
+        app: self-healing-ai
+    spec:
+      containers:
+        - name: self-healing-ai
+          image: your-dockerhub/self-healing-k8s
+          ports:
+            - containerPort: 8000
+          env:
+            - name: GEMINI_API_KEY
+              value: "AIzaSyDlp8BfQuAlfCJmrLWbDQQd08Jt8uxJ5ME"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: self-healing-service
+spec:
+  selector:
+    app: self-healing-ai
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer
