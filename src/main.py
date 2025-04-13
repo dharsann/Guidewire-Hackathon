@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-genai.configure(api_key="AIzaSyDlp8BfQuAlfCJmrLWbDQQd08Jt8uxJ5ME")
+genai.configure(api_key="GOOGLE_API_KEY")
 
 prediction_metric = Gauge('k8s_prediction', 'Predicted Kubernetes issue type', ['issue_type'])
 remediation_metric = Gauge('k8s_remediation', 'Remediation action taken', ['action'])
