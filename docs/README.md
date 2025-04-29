@@ -80,6 +80,14 @@ Replace `your_module_name` with the name of your Python file (without the `.py` 
         "action": "Action taken"
     }
     ```
+### `/metrics`
+- **Method:** `GET`  
+- **Description:** Prometheus endpoint exposing real-time metrics related to predicted issue types and remediation actions taken.
+
+### `/health`
+- **Method:** `GET`  
+- **Description:** Basic health check to confirm the FastAPI service is running properly.
+
 
 ## Model Training
 

@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Kubernetes Self-Healing API", 
               description="API for Kubernetes monitoring, self-healing, and remediation recommendations")
 
-genai.configure(api_key="YOUR_API_KEY_HERE")
+genai.configure(api_key="AIzaSyDlp8BfQuAlfCJmrLWbDQQd08Jt8uxJ5ME")
+app = FastAPI()
 
 prediction_metric = Gauge('k8s_prediction', 'Predicted Kubernetes issue type', ['issue_type'])
 remediation_metric = Gauge('k8s_remediation', 'Remediation action taken', ['action'])
