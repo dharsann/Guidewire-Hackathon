@@ -1,101 +1,187 @@
-# Kubernetes Self-Healing Service
+---
 
-This project provides a self-healing service for Kubernetes environments using FastAPI. It leverages machine learning models to predict metrics, detect anomalies, and take corrective actions based on detected issues. The project is currently under development. The project is currently under development and uses Minikube for testing and deployment.
+# 🚑 Kubernetes Self-Healing API
 
-## Table of Contents
+An intelligent FastAPI-based service that monitors a Kubernetes cluster and performs **self-healing**, **anomaly detection**, and **AI-powered remediation recommendations** using LSTM, Isolation Forest, and Gemini Pro.
 
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Model Training](#model-training)
-- [Data Source](#data-source)
-- [Contributing](#contributing)
-- [License](#license)
+---
 
-## Features
+## 📦 Features
 
-- Predicts Kubernetes performance metrics using an LSTM model.
-- Detects anomalies in the predicted metrics.
-- Classifies the type of issue and takes appropriate actions (e.g., restarting pods, scaling deployments).
-- Integrates with Kubernetes to retrieve active pods, deployments, and nodes.
+- Predict Kubernetes failures using LSTM
+- Detect anomalies in pod, node, and deployment metrics
+- Automate remediation actions (restart pod, scale deployment, migrate pods)
+- Generate AI-based remediation suggestions (via Google Gemini Pro)
+- Export Prometheus metrics
+- Cluster-wide health monitoring and scoring
 
-## Installation
+---
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd <repository-directory>
-```
+## 🛠️ Setup
 
-### 2. Set Up a Virtual Environment
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-```
-
-### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-### 4. Download Pre-trained Models
-Ensure the following pre-trained models are in the project directory:
-- **LSTM Model:** `lstm_k8s_model_extended.pth`
-- **Isolation Forest Model:** `isolation_forest.pkl`
+Ensure that your environment includes:
+- `torch`
+- `google-generativeai`
+- `prometheus_client`
+- `fastapi`
+- `uvicorn`
+- A valid Google Generative AI API Key
 
-## Usage
+---
 
-### Run the FastAPI Application
+## 🚀 Endpoints
+
+### Health & Metrics
+
+#### `GET /health`
+Check API status.
+
+#### `GET /metrics`
+Returns Prometheus-formatted metrics.
+
+---
+
+### Resource Discovery
+
+#### `GET /api/v1/resources/{resource_type}`
+List active Kubernetes resources (pods, nodes, deployments).
+
+- **Path Params**:
+  - `resource_type`: `pods` | `nodes` | `deployments`
+
+**Example**:
 ```bash
-uvicorn your_module_name:app --reload
+curl http://localhost:8000/api/v1/resources/pods
 ```
-Replace `your_module_name` with the name of your Python file (without the `.py` extension).
 
-### Access the API
-- The API will be available at **http://127.0.0.1:8000**.
-- Use tools like **Postman** or `cURL` to interact with the API.
+---
 
-## API Endpoints
+### 🔍 Anomaly Detection
 
-### `/self_heal`
-- **Method:** `POST`
-- **Description:** Endpoint to predict Kubernetes metrics, detect anomalies, and take corrective actions.
-- **Request Body:**
-    ```json
+#### `POST /api/v1/analyze`
+Analyze a Kubernetes resource for anomalies and get a recommendation.
+
+- **Query Params**:
+  - `resource_type`: `pods`, `nodes`, `deployments`
+  - `resource_name`: name of the resource
+
+**Response**:
+```json
+{
+  "resource_name": "nginx-pod-1",
+  "anomaly_detected": true,
+  "issue_type": "pod_crash",
+  "confidence": 0.85,
+  "metrics": { "metric_0": 0.45, ... },
+  "recommendation": "Restart the pod immediately"
+}
+```
+
+---
+
+### 🔧 Remediation
+
+#### `POST /api/v1/remediate`
+Trigger remediation for a resource based on detected or provided issue.
+
+- **Body**:
+```json
+{
+  "resource_type": "pods",
+  "resource_name": "nginx-pod-1",
+  "issue_type": "pod_crash"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "action_taken": "Pod restarted",
+  "details": "Pod nginx-pod-1 restarted due to crash",
+  "timestamp": "2025-04-29 14:20:31"
+}
+```
+
+---
+
+### 💡 Recommendations
+
+#### `GET /api/v1/recommendations/{resource_type}/{resource_name}`
+AI-generated Kubernetes best-practice and remediation recommendations using Gemini Pro.
+
+**Response**:
+```json
+{
+  "resource_name": "nginx-deployment",
+  "resource_type": "deployments",
+  "recommendations": [
     {
-        "input_features": [0.8, 0.7, 400],  
-        "pod_lifetime_seconds": 45,
-        "event_type": "Warning",
-        "pod_name": "nginx-pod",
-        "node_name": "minikube"
+      "title": "Implement Health Checks",
+      "description": "Add liveness and readiness probes...",
+      "expected_benefit": "Faster recovery from failures",
+      "complexity": "Low",
+      "priority": "High"
     }
-    ```
-- **Response:**
-    ```json
-    {
-        "predicted_values": [...],
-        "status": "Anomaly or Normal",
-        "issue_type": "Type of issue",
-        "action": "Action taken"
-    }
-    ```
-### `/metrics`
-- **Method:** `GET`  
-- **Description:** Prometheus endpoint exposing real-time metrics related to predicted issue types and remediation actions taken.
+  ],
+  "generated_at": "2025-04-29 14:22:00",
+  "priority": "High"
+}
+```
 
-### `/health`
-- **Method:** `GET`  
-- **Description:** Basic health check to confirm the FastAPI service is running properly.
+---
 
+### 🧠 Cluster Health Overview
 
-## Model Training
+#### `GET /api/v1/cluster/health`
+Returns overall cluster health score and metrics summary.
 
-- The **LSTM model** is trained to predict Kubernetes performance metrics.
-- The **Isolation Forest model** is used for anomaly detection.
-- Ensure the models are trained and saved in the project directory before running the application.
+**Response**:
+```json
+{
+  "status": "Healthy",
+  "health_score": 0.93,
+  "components": {
+    "pods": {
+      "health_score": 0.9,
+      "total": 10,
+      "healthy": 9,
+      "warning": 1,
+      ...
+    },
+    ...
+  },
+  "timestamp": "2025-04-29 14:25:00"
+}
+```
 
-## Data Source
+---
 
-The dataset used for training the models is sourced from Kaggle. It contains performance metrics and other relevant data from Kubernetes environments. The dataset is preprocessed and used to train the LSTM model for predicting future metrics and the Isolation Forest model for detecting anomalies.
+## 📊 Prometheus Integration
 
+Metrics are exposed at `/metrics` and include:
+- `k8s_prediction{issue_type="pod_crash"}`
+- `k8s_remediation{action="restart_pod"}`
+
+---
+
+## 🧠 Powered by
+
+- **PyTorch** (LSTM predictions)
+- **Isolation Forest** (anomaly detection)
+- **Gemini Pro API** (remediation suggestions)
+- **Prometheus** (metrics)
+- **FastAPI** (API framework)
+
+---
+
+## 🧪 Development Mode
+
+To simulate metrics and test functionality without a live cluster, adjust the `get_kubernetes_metrics()` function to return synthetic values (already implemented).
+
+---
