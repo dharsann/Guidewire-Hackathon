@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: self-healing-ai
-          image: your-dockerhub/self-healing-k8s
+          image: self-healing-ai:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           env:
