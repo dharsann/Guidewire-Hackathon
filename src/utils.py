@@ -65,7 +65,7 @@ def generate_remediation_suggestion(anomaly: str, pod_name: str, namespace: str)
             f"A Kubernetes pod named '{pod_name}' in the namespace '{namespace}' is experiencing an anomaly: {anomaly}. "
             f"Suggest a remediation action that can fix this automatically."
         )
-        model = genai.GenerativeModel("gemini-pro")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(prompt)
         text = response.text.strip()
 
